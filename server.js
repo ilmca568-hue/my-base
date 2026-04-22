@@ -8,6 +8,7 @@ app.use(bodyParser.json());
 
 const DATA_FILE = 'data.json';
 
+// ЧИТАЕМ БАЗУ (С ПРОВЕРКОЙ НА СТРУКТУРУ)
 const readDB = () => {
     try {
         if (!fs.existsSync(DATA_FILE)) {
@@ -15,7 +16,13 @@ const readDB = () => {
             fs.writeFileSync(DATA_FILE, JSON.stringify(initial, null, 2));
             return initial;
         }
-        return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+        const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+        // Проверка, чтобы ключи были на месте
+        if (!data.work_calendar) data.work_calendar = { ilya: {}, katya: {} };
+        if (!data.work_calendar.ilya) data.work_calendar.ilya = {};
+        if (!data.work_calendar.katya) data.work_calendar.katya = {};
+        if (!data.items) data.items = [];
+        return data;
     } catch (e) {
         return { work_calendar: { ilya: {}, katya: {} }, items: [] };
     }
@@ -23,7 +30,7 @@ const readDB = () => {
 
 const writeDB = (data) => fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 
-// ГЛАВНАЯ
+// ГЛАВНАЯ СТРАНИЦА
 app.get('/', (req, res) => {
     const db = readDB();
     const items = db.items || [];
@@ -32,12 +39,12 @@ app.get('/', (req, res) => {
         <div style="grid-column: 1/-1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
             <a href="/calendar/ilya" style="text-decoration: none;">
                 <div style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); padding: 25px; border-radius: 20px; text-align: center; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);">
-                    <h2 style="color: #fff; margin: 0; font-size: 22px;">ГРАФИК ИЛЬЯ</h2>
+                    <h2 style="color: #fff; margin: 0; font-size: 20px; letter-spacing: 1px;">ГРАФИК ИЛЬЯ →</h2>
                 </div>
             </a>
             <a href="/calendar/katya" style="text-decoration: none;">
                 <div style="background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); padding: 25px; border-radius: 20px; text-align: center; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);">
-                    <h2 style="color: #fff; margin: 0; font-size: 22px;">ГРАФИК КАТЯ</h2>
+                    <h2 style="color: #fff; margin: 0; font-size: 20px; letter-spacing: 1px;">ГРАФИК КАТЯ →</h2>
                 </div>
             </a>
         </div>
@@ -48,29 +55,32 @@ app.get('/', (req, res) => {
             <div style="background: #1e293b; border: 1px solid #334155; padding: 20px; border-radius: 16px; display: flex; flex-direction: column; justify-content: space-between;">
                 <div>
                     <h3 style="color: #38bdf8; margin: 0;">${item.title}</h3>
-                    <p style="color: #94a3b8; font-size: 14px; margin-top: 10px;">${item.desc}</p>
+                    <p style="color: #94a3b8; font-size: 14px; margin-top: 10px; line-height: 1.4;">${item.desc}</p>
                 </div>
-                <a href="/delete/${index}" style="color: #fb7185; text-decoration: none; font-size: 12px; margin-top: 15px; font-weight: bold;">УДАЛИТЬ</a>
+                <a href="/delete/${index}" style="color: #fb7185; text-decoration: none; font-size: 12px; margin-top: 15px; font-weight: bold; border-top: 1px solid #334155; padding-top: 10px; display: block; text-align: center;">УДАЛИТЬ</a>
             </div>
         `;
     });
 
     res.send(`
-        <html><body style="background: #0f172a; color: #f8fafc; font-family: sans-serif; padding: 40px;">
-            <h1 style="text-align: center; font-weight: 300; margin-bottom: 40px;">Личная <b style="color: #6366f1;">База</b></h1>
-            <div style="max-width: 500px; margin: 0 auto 50px; background: #1e293b; padding: 25px; border-radius: 20px;">
-                <form action="/add" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
-                    <input name="title" placeholder="Заголовок" required style="padding: 12px; background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 10px;">
-                    <input name="desc" placeholder="Описание" required style="padding: 12px; background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 10px;">
-                    <button type="submit" style="padding: 14px; background: #6366f1; color: #fff; border: none; border-radius: 10px; cursor: pointer; font-weight: bold;">ДОБАВИТЬ</button>
-                </form>
+        <html><head><title>База</title><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+        <body style="background: #0f172a; color: #f8fafc; font-family: sans-serif; padding: 20px; margin: 0;">
+            <div style="max-width: 1200px; margin: 0 auto;">
+                <h1 style="text-align: center; font-weight: 300; margin: 20px 0 40px;">Личная <b style="color: #6366f1;">База</b></h1>
+                <div style="max-width: 500px; margin: 0 auto 50px; background: #1e293b; padding: 25px; border-radius: 20px; border: 1px solid #334155;">
+                    <form action="/add" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+                        <input name="title" placeholder="Заголовок" required style="padding: 12px; background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 10px; outline: none;">
+                        <input name="desc" placeholder="Описание" required style="padding: 12px; background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 10px; outline: none;">
+                        <button type="submit" style="padding: 14px; background: #6366f1; color: #fff; border: none; border-radius: 10px; cursor: pointer; font-weight: bold;">ДОБАВИТЬ КАРТОЧКУ</button>
+                    </form>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px;">${cardsHtml}</div>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; max-width: 1200px; margin: 0 auto;">${cardsHtml}</div>
         </body></html>
     `);
 });
 
-// КАЛЕНДАРЬ ПО ИМЕНИ
+// СТРАНИЦА ГРАФИКА
 app.get('/calendar/:user', (req, res) => {
     const user = req.params.user;
     const db = readDB();
@@ -81,21 +91,22 @@ app.get('/calendar/:user', (req, res) => {
     let daysHtml = '';
     for (let i = 1; i <= 31; i++) {
         daysHtml += `
-            <div style="background: #1e293b; border: 1px solid #334155; min-height: 100px; display: flex; flex-direction: column; border-radius: 8px;">
-                <div style="background: #334155; color: #fff; padding: 4px 8px; font-size: 11px;">${i}</div>
-                <textarea onchange="saveDay('${user}', ${i}, this.value)" style="background: transparent; border: none; color: #fff; padding: 8px; resize: none; flex-grow: 1; outline: none; font-size: 12px;">${cal[i] || ''}</textarea>
+            <div style="background: #1e293b; border: 1px solid #334155; min-height: 100px; display: flex; flex-direction: column; border-radius: 8px; overflow: hidden;">
+                <div style="background: #334155; color: #fff; padding: 4px 8px; font-size: 11px; font-weight: bold;">${i}</div>
+                <textarea onchange="saveDay('${user}', ${i}, this.value)" style="background: transparent; border: none; color: #fff; padding: 8px; resize: none; flex-grow: 1; outline: none; font-size: 13px; font-family: inherit;">${cal[i] || ''}</textarea>
             </div>
         `;
     }
 
     res.send(`
-        <html><body style="background: #0f172a; color: #f8fafc; font-family: sans-serif; padding: 20px;">
+        <html><head><title>График: ${name}</title><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+        <body style="background: #0f172a; color: #f8fafc; font-family: sans-serif; padding: 20px; margin: 0;">
             <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1100px; margin: 0 auto 30px;">
-                <a href="/" style="color: ${color}; text-decoration: none; font-weight: bold;">← НАЗАД</a>
-                <h1 style="margin: 0; font-weight: 300;">ГРАФИК: <span style="color: ${color}; font-weight: bold;">${name}</span></h1>
-                <div style="width: 70px;"></div>
+                <a href="/" style="color: #fff; text-decoration: none; font-weight: bold; background: ${color}; padding: 8px 15px; border-radius: 8px;">← НА ГЛАВНУЮ</a>
+                <h1 style="margin: 0; font-weight: 300;">ГРАФИК: <b style="color: ${color};">${name}</b></h1>
+                <div style="width: 100px;"></div>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; max-width: 1100px; margin: 0 auto;">${daysHtml}</div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; max-width: 1100px; margin: 0 auto;">${daysHtml}</div>
             <script>
                 async function saveDay(user, day, text) {
                     await fetch('/save-calendar', {
@@ -109,7 +120,7 @@ app.get('/calendar/:user', (req, res) => {
     `);
 });
 
-// СОХРАНЕНИЕ
+// СОХРАНЕНИЕ ГРАФИКА
 app.post('/save-calendar', (req, res) => {
     const { user, day, text } = req.body;
     const db = readDB();
@@ -119,6 +130,7 @@ app.post('/save-calendar', (req, res) => {
     res.sendStatus(200);
 });
 
+// ДОБАВЛЕНИЕ КАРТОЧКИ
 app.post('/add', (req, res) => {
     const db = readDB();
     db.items.push(req.body);
@@ -126,6 +138,7 @@ app.post('/add', (req, res) => {
     res.redirect('/');
 });
 
+// УДАЛЕНИЕ КАРТОЧКИ
 app.get('/delete/:id', (req, res) => {
     const db = readDB();
     db.items.splice(req.params.id, 1);
@@ -133,5 +146,6 @@ app.get('/delete/:id', (req, res) => {
     res.redirect('/');
 });
 
+// ПОРТ ДЛЯ RENDER И ЗАПУСК
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Сервер запущен на порту ${PORT}`));
+app.listen(PORT, () => console.log(\`Сервер живет на порту \${PORT}\`));
