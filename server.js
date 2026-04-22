@@ -8,6 +8,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// Подключение к базе данных
 const MONGO_URI = 'mongodb+srv://ilmca568_db_user:MyPassword2026@cluster0.nqdobbg.mongodb.net/myDatabase?retryWrites=true&w=majority';
 
 mongoose.connect(MONGO_URI)
@@ -15,87 +16,98 @@ mongoose.connect(MONGO_URI)
     .catch(err => console.log('DB Error:', err));
 
 const DataSchema = new mongoose.Schema({
-    type: String,
-    user: String,
-    day: Number,
-    text: String,
-    title: String,
-    desc: String
+    type: String, user: String, day: Number, text: String, title: String, desc: String
 });
 const Data = mongoose.model('Data', DataSchema);
 
-app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Стили вынесены в обычную строку, чтобы не было ошибок синтаксиса
+const myStyles = '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+    '<style>' +
+        ':root { --bg: #0f172a; --panel: #1e293b; --text: #f8fafc; --accent: #6366f1; --border: #334155; }' +
+        'body.theme-light { --bg: #f8fafc; --panel: #ffffff; --text: #0f172a; --accent: #2563eb; --border: #e2e8f0; }' +
+        'body.theme-neon { --bg: #0d0221; --panel: #261447; --text: #ff0055; --accent: #00f7ff; --border: #ff0055; }' +
+        'body.theme-hacker { --bg: #000; --panel: #0a0a0a; --text: #00ff41; --accent: #008f11; --border: #003b00; }' +
+        'body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; transition: 0.3s; margin:0; }' +
+        '.container { max-width: 800px; margin: 0 auto; padding-top: 40px; }' +
+        '.theme-bar { position: fixed; top: 10px; right: 10px; background: var(--panel); padding: 5px; border-radius: 20px; border: 1px solid var(--border); display: flex; gap: 5px; z-index: 1000; }' +
+        '.theme-bar button { border: none; background: none; font-size: 18px; cursor: pointer; }' +
+        '.card { background: var(--panel); padding: 20px; border-radius: 15px; border: 1px solid var(--border); margin-bottom: 15px; }' +
+        'h3 { color: var(--accent); margin: 0 0 10px 0; }' +
+        '.nav-box { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }' +
+        '.nav-btn { padding: 20px; border-radius: 15px; text-align: center; color: #fff; text-decoration: none; font-weight: bold; }' +
+        'form { background: var(--panel); padding: 20px; border-radius: 15px; border: 1px solid var(--border); display: grid; gap: 10px; }' +
+        'input { padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }' +
+        'button[type="submit"] { padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }' +
+        '.del { color: #fb7185; text-decoration: none; font-size: 12px; }' +
+    '</style>';
+
+const themeLogic = '<script>' +
+    'function applyTheme(t) { ' +
+        'document.body.className = t === "classic" ? "" : "theme-" + t; ' +
+        'localStorage.setItem("user-theme", t); ' +
+    '}' +
+    'const saved = localStorage.getItem("user-theme");' +
+    'if(saved) applyTheme(saved);' +
+    '</script>';
 
 app.get('/', async (req, res) => {
     try {
         const items = await Data.find({ type: 'item' });
-        let cardsHtml = `
-            <div style="grid-column: 1/-1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; max-width:600px; margin: 0 auto 30px;">
-                <a href="/calendar/ilya" style="text-decoration:none;"><div style="background:linear-gradient(135deg,#6366f1 0%,#4f46e5 100%);padding:25px;border-radius:20px;text-align:center;"><h2 style="color:#fff;margin:0;font-size:20px;">ИЛЬЯ</h2></div></a>
-                <a href="/calendar/katya" style="text-decoration:none;"><div style="background:linear-gradient(135deg,#a855f7 0%,#9333ea 100%);padding:25px;border-radius:20px;text-align:center;"><h2 style="color:#fff;margin:0;font-size:20px;">КАТЯ</h2></div></a>
-            </div>
-        `;
-        items.forEach((item) => {
-            cardsHtml += `
-                <div style="background:#1e293b;border:1px solid #334155;padding:20px;border-radius:16px;">
-                    <h3 style="color:#38bdf8;margin:0">${item.title}</h3>
-                    <p style="color:#94a3b8;font-size:14px">${item.desc}</p>
-                    <a href="/delete/${item._id}" style="color:#fb7185;text-decoration:none;font-size:12px;font-weight:bold;">УДАЛИТЬ</a>
-                </div>
-            `;
+        let cardsHtml = "";
+        items.forEach(item => {
+            cardsHtml += '<div class="card"><h3>' + item.title + '</h3><p>' + item.desc + '</p><a href="/delete/' + item._id + '" class="del">УДАЛИТЬ</a></div>';
         });
 
-        res.send(`<html><body style="background:#0f172a;color:#f8fafc;font-family:sans-serif;padding:20px;">
-            <h1 style="text-align:center;margin-bottom:40px;">Личная <b style="color:#6366f1;">База</b></h1>
-            <div style="max-width:500px;margin:0 auto 50px;background:#1e293b;padding:25px;border-radius:20px;">
-                <form action="/add" method="POST" style="display:flex;flex-direction:column;gap:15px;">
-                    <input name="title" placeholder="Заголовок" required style="padding:12px;background:#0f172a;color:#fff;border:1px solid #334155;border-radius:10px;">
-                    <input name="desc" placeholder="Описание" required style="padding:12px;background:#0f172a;color:#fff;border:1px solid #334155;border-radius:10px;">
-                    <button type="submit" style="padding:14px;background:#6366f1;color:#fff;border:none;border-radius:10px;cursor:pointer;">ДОБАВИТЬ</button>
-                </form>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:25px;">${cardsHtml}</div>
-        </body></html>`);
+        res.send('<html><head><title>My Base</title>' + myStyles + '</head><body>' +
+            '<div class="theme-bar">' +
+                '<button onclick="applyTheme(\'classic\')">🌌</button>' +
+                '<button onclick="applyTheme(\'light\')">☀️</button>' +
+                '<button onclick="applyTheme(\'neon\')">🔮</button>' +
+                '<button onclick="applyTheme(\'hacker\')">📟</button>' +
+            '</div>' +
+            '<div class="container">' +
+                '<div class="nav-box">' +
+                    '<a href="/calendar/ilya" class="nav-btn" style="background:#6366f1">ИЛЬЯ</a>' +
+                    '<a href="/calendar/katya" class="nav-btn" style="background:#a855f7">КАТЯ</a>' +
+                '</div>' +
+                '<form action="/add" method="POST">' +
+                    '<input name="title" placeholder="Заголовок" required>' +
+                    '<input name="desc" placeholder="Описание" required>' +
+                    '<button type="submit">ДОБАВИТЬ</button>' +
+                '</form>' +
+                '<div style="margin-top:30px">' + cardsHtml + '</div>' +
+            '</div>' + themeLogic + '</body></html>');
     } catch (e) { res.send(e.message); }
 });
 
 app.get('/calendar/:user', async (req, res) => {
-    const user = req.params.user;
-    const records = await Data.find({ type: 'calendar', user: user });
-    const cal = {};
-    records.forEach(r => cal[r.day] = r.text);
-    let daysHtml = '';
-    for (let i = 1; i <= 31; i++) {
-        daysHtml += `
-            <div style="background:#1e293b;border:1px solid #334155;min-height:80px;border-radius:8px;">
-                <div style="background:#334155;color:#fff;padding:4px;font-size:11px;">${i}</div>
-                <textarea id="day-${i}" oninput="sendData('${user}', ${i}, this.value)" style="background:transparent;border:none;color:#fff;padding:5px;width:100%;height:50px;resize:none;outline:none;">${cal[i] || ''}</textarea>
-            </div>
-        `;
-    }
-    res.send(`<html><body style="background:#0f172a;color:#f8fafc;font-family:sans-serif;padding:20px;">
-        <script src="/socket.io/socket.io.js"></script>
-        <a href="/" style="color:#fff;text-decoration:none;background:#334155;padding:10px 20px;border-radius:10px;">← НАЗАД</a>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:20px;">${daysHtml}</div>
-        <script>
-            const socket = io();
-            function sendData(user, day, text) { socket.emit('edit-calendar', { user, day, text }); }
-            socket.on('update-ui', (data) => {
-                const el = document.getElementById('day-' + data.day);
-                if (el && data.user === '${user}') { el.value = data.text; }
-            });
-        </script>
-    </body></html>`);
+    try {
+        const user = req.params.user;
+        const records = await Data.find({ type: 'calendar', user: user });
+        const cal = {};
+        records.forEach(r => cal[r.day] = r.text);
+        let days = "";
+        for (let i = 1; i <= 31; i++) {
+            days += '<div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px;">' +
+                    '<div style="font-size:10px;color:var(--accent)">' + i + ' число</div>' +
+                    '<textarea oninput="socket.emit(\'edit-calendar\', {user:\'' + user + '\', day:' + i + ', text:this.value})" ' +
+                    'style="background:transparent;border:none;color:var(--text);width:100%;height:40px;resize:none;outline:none;">' + (cal[i] || '') + '</textarea></div>';
+        }
+        res.send('<html><head><title>Calendar</title>' + myStyles + '</head><body>' +
+            '<script src="/socket.io/socket.io.js"></script><script>const socket = io();</script>' +
+            '<div class="container"><a href="/" style="color:var(--accent);text-decoration:none;font-weight:bold;">← НАЗАД</a>' +
+            '<h2 style="text-align:center">ГРАФИК: ' + user.toUpperCase() + '</h2>' +
+            '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:20px">' + days + '</div></div>' +
+            themeLogic + '</body></html>');
+    } catch (e) { res.send(e.message); }
 });
 
 io.on('connection', (socket) => {
     socket.on('edit-calendar', async (data) => {
-        await Data.findOneAndUpdate(
-            { type: 'calendar', user: data.user, day: data.day },
-            { text: data.text },
-            { upsert: true }
-        );
+        await Data.findOneAndUpdate({ type: 'calendar', user: data.user, day: data.day }, { text: data.text }, { upsert: true });
         socket.broadcast.emit('update-ui', data);
     });
 });
