@@ -3,13 +3,13 @@ const bodyParser = require('body-parser');
 const http = require('http');
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Раздача статических файлов (чтобы работала иконка favicon.png)
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 const MONGO_URI = 'mongodb+srv://ilmca568_db_user:MyPassword2026@cluster0.nqdobbg.mongodb.net/myDatabase?retryWrites=true&w=majority';
 
@@ -29,7 +29,9 @@ const monthsRu = ['Январь', 'Февраль', 'Март', 'Апрель', 
 
 const myStyles = (title) => `
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/png" href="/favicon.png">
+    
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/8PzX8qf0/slate-cards-ki-favicon.png">
+    
     <title>${title}</title>
     <style>
         :root { --bg: #0f172a; --panel: #1e293b; --text: #f8fafc; --accent: #6366f1; --border: #334155; }
