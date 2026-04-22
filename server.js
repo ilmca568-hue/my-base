@@ -9,6 +9,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// Это критически важно для иконки!
 app.use(express.static(path.join(__dirname, 'public')));
 
 const MONGO_URI = 'mongodb+srv://ilmca568_db_user:MyPassword2026@cluster0.nqdobbg.mongodb.net/myDatabase?retryWrites=true&w=majority';
@@ -28,9 +29,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const monthsRu = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
 
 const myStyles = (title) => `
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAZklEQVRYR2NgGAWjYBSMglEwCkbBSAcM9PT0/idOnPgfX5idnf2fkpLyb9S9v3v37v9p06b9Rxbq6en9z8jI+D/q3o8CclEALvofBaNgFIyCUTAKRsEoGAWjYBSMglEwCkbBKCAHAADLSk6N6mYvAAAAAElFTkSuQmCC">
+    <link rel="shortcut icon" href="/favicon.png?v=${Date.now()}" type="image/png">
+    <link rel="icon" href="/favicon.png?v=${Date.now()}" type="image/png">
     
     <title>${title}</title>
     <style>
@@ -76,7 +79,7 @@ app.get('/', async (req, res) => {
         items.forEach(item => {
             cardsHtml += `<div class="card"><h3 style="color:var(--accent); font-size:22px; margin:0">${item.title}</h3><p style="font-size:18px">${item.desc}</p><a href="/delete/${item._id}" style="color:#fb7185; font-weight:bold; text-decoration:none; font-size:14px;">УДАЛИТЬ</a></div>`;
         });
-        res.send(`<html><head>${myStyles("Главная")}</head><body>
+        res.send(`<!DOCTYPE html><html><head>${myStyles("Главная")}</head><body>
             <div class="theme-bar"><button onclick="applyTheme('classic')">🌌</button><button onclick="applyTheme('light')">☀️</button><button onclick="applyTheme('nordic')">❄️</button><button onclick="applyTheme('coffee')">☕</button></div>
             <div class="container">
                 <div class="nav-box">
@@ -109,7 +112,7 @@ app.get('/calendar/:user', async (req, res) => {
         }
         const prevM = (m === 0) ? 11 : m - 1;
         const nextM = (m === 11) ? 0 : m + 1;
-        res.send(`<html><head>${myStyles("График " + nameDisplay)}</head><body>
+        res.send(`<!DOCTYPE html><html><head>${myStyles("График " + nameDisplay)}</head><body>
             <script src="/socket.io/socket.io.js"></script><script>const socket = io();</script>
             <div class="container">
                 <a href="/" style="color:var(--accent); text-decoration:none; font-weight:bold; font-size:18px;">← НАЗАД</a>
