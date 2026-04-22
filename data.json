@@ -1,7 +1,17 @@
 {
   "work_calendar": {
-    "ilya": {},
-    "katya": {}
+    "ilya": {
+      "1": ""
+    },
+    "katya": {
+      "1": "49",
+      "8": "ddddd"
+    }
   },
-  "items": []
+  "items": [
+    {
+      "title": "1111",
+      "desc": "1111"
+    }
+  ]
 }

@@ -133,4 +133,5 @@ app.get('/delete/:id', (req, res) => {
     res.redirect('/');
 });
 
-app.listen(3000, () => console.log('Сервер с двумя графиками: http://localhost:3000'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Сервер запущен на порту ${PORT}`));
