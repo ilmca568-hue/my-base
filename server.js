@@ -30,7 +30,7 @@ const monthsRu = ['Январь', 'Февраль', 'Март', 'Апрель', 
 const myStyles = (title) => `
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <link rel="icon" type="image/png" href="https://i.postimg.cc/8PzX8qf0/slate-cards-ki-favicon.png">
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAZklEQVRYR2NgGAWjYBSMglEwCkbBSAcM9PT0/idOnPgfX5idnf2fkpLyb9S9v3v37v9p06b9Rxbq6en9z8jI+D/q3o8CclEALvofBaNgFIyCUTAKRsEoGAWjYBSMglEwCkbBKCAHAADLSk6N6mYvAAAAAElFTkSuQmCC">
     
     <title>${title}</title>
     <style>
