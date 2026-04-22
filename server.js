@@ -8,7 +8,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const MONGO_URI = 'mongodb+srv://ilmca568_db_user:1SO4MvZPhTQwNAJb@cluster0.nqdobbg.mongodb.net/myDatabase?retryWrites=true&w=majority';
+const MONGO_URI = 'mongodb+srv://ilmca568_db_user:MyPassword2026@cluster0.nqdobbg.mongodb.net/myDatabase?retryWrites=true&w=majority';
 
 mongoose.connect(MONGO_URI)
     .then(() => console.log('MongoDB Connected'))
