@@ -9,8 +9,8 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Это критически важно для иконки!
-app.use(express.static(path.join(__dirname, 'public')));
+// Настройка: теперь сервер раздает файлы прямо из корня
+app.use(express.static(__dirname));
 
 const MONGO_URI = 'mongodb+srv://ilmca568_db_user:MyPassword2026@cluster0.nqdobbg.mongodb.net/myDatabase?retryWrites=true&w=majority';
 
@@ -32,8 +32,7 @@ const myStyles = (title) => `
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <link rel="shortcut icon" href="/favicon.png?v=${Date.now()}" type="image/png">
-    <link rel="icon" href="/favicon.png?v=${Date.now()}" type="image/png">
+    <link rel="icon" type="image/png" href="/favicon.png?v=${Date.now()}">
     
     <title>${title}</title>
     <style>
@@ -93,7 +92,7 @@ app.get('/', async (req, res) => {
                 </form>
                 <div>${cardsHtml}</div>
             </div>${themeLogic}</body></html>`);
-    } catch (e) { res.send(e.message); }
+    } catch (e) { res.status(500).send(e.message); }
 });
 
 app.get('/calendar/:user', async (req, res) => {
@@ -119,7 +118,7 @@ app.get('/calendar/:user', async (req, res) => {
                 <h1 style="text-align:center; font-size:40px; margin:20px 0;">ГРАФИК: ${nameDisplay}</h1>
                 <div class="month-nav"><a href="?m=${prevM}" class="month-btn">⬅</a><div class="month-title">${monthsRu[m]}</div><a href="?m=${nextM}" class="month-btn">➡</a></div>
                 <div class="cal-grid">${days}</div></div>${themeLogic}</body></html>`);
-    } catch (e) { res.send(e.message); }
+    } catch (e) { res.status(500).send(e.message); }
 });
 
 io.on('connection', (socket) => {
@@ -132,7 +131,11 @@ app.post('/add', async (req, res) => {
     await new Data({ type: 'item', title: req.body.title, desc: req.body.desc }).save();
     res.redirect('/');
 });
-app.get('/delete/:id', async (req, res) => { await Data.findByIdAndDelete(req.params.id); res.redirect('/'); });
+
+app.get('/delete/:id', async (req, res) => { 
+    await Data.findByIdAndDelete(req.params.id); 
+    res.redirect('/'); 
+});
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log('Ready on localhost:3000'));
+server.listen(PORT, () => console.log('Server is running...'));
