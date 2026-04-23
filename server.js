@@ -9,8 +9,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Настройка: теперь сервер раздает файлы прямо из корня
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, 'public')));
 
 const MONGO_URI = 'mongodb+srv://ilmca568_db_user:MyPassword2026@cluster0.nqdobbg.mongodb.net/myDatabase?retryWrites=true&w=majority';
 
@@ -32,7 +31,7 @@ const myStyles = (title) => `
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <link rel="icon" type="image/png" href="/favicon.png?v=${Date.now()}">
+    <link rel="icon" type="image/png" href="https://i.ibb.co/68vD8Z2/ki-folder-favicon.png">
     
     <title>${title}</title>
     <style>
@@ -131,11 +130,10 @@ app.post('/add', async (req, res) => {
     await new Data({ type: 'item', title: req.body.title, desc: req.body.desc }).save();
     res.redirect('/');
 });
-
 app.get('/delete/:id', async (req, res) => { 
     await Data.findByIdAndDelete(req.params.id); 
     res.redirect('/'); 
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log('Server is running...'));
+server.listen(PORT, () => console.log('Ready on port 3000'));
