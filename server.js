@@ -9,6 +9,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// СТРОГО: Указываем серверу, что папка public — это склад для картинок
 app.use(express.static(path.join(__dirname, 'public')));
 
 const MONGO_URI = 'mongodb+srv://ilmca568_db_user:MyPassword2026@cluster0.nqdobbg.mongodb.net/myDatabase?retryWrites=true&w=majority';
@@ -31,7 +32,7 @@ const myStyles = (title) => `
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <link rel="icon" type="image/png" href="https://i.ibb.co/68vD8Z2/ki-folder-favicon.png">
+    <link rel="icon" type="image/png" href="/favicon.png?v=${Date.now()}">
     
     <title>${title}</title>
     <style>
@@ -136,4 +137,4 @@ app.get('/delete/:id', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log('Ready on port 3000'));
+server.listen(PORT, () => console.log('Server running with folder support...'));
